@@ -1,6 +1,10 @@
 @page "/"
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
+@using BlazingPizza.Services
+@inject OrderState OrderState
+
+
 <div class="main">
   <h1>Blazing Pizzas</h1>
   <ul class="pizza-cards">
@@ -8,23 +12,43 @@
     {
       @foreach (var special in specials)
       {
-        <li style="background-image: url('@special.ImageUrl')">
-          <div class="pizza-info">
+            <li @onclick="@(() => OrderState.ShowConfigurePizzaDialog(special))" style="background-image: url('@special.ImageUrl')">              <div class="pizza-info">
               <span class="title">@special.Name</span>
-                  @special.Description
-                <span class="price">@special.GetFormattedBasePrice()</span>
-          </div>
-        </li>
+              @special.Description
+              <span class="price">@special.GetFormattedBasePrice()</span>
+              </div>
+            </li>
+
       }
     }
   </ul>
 </div>
+
+@if (OrderState.ShowingConfigureDialog)
+{
+<ConfigurePizzaDialog Pizza="OrderState.ConfiguringPizza" />
+}
+
 @code {
+    @* Pizza configuringPizza; *@
+    @* bool showingConfigureDialog; *@
     List<PizzaSpecial> specials = new();
     protected override async Task OnInitializedAsync()
     {
         specials = await HttpClient.GetFromJsonAsync<List<PizzaSpecial>>(NavigationManager.BaseUri + "specials");
     }
+    @* void ShowConfigurePizzaDialog(PizzaSpecial special)
+    {
+        configuringPizza = new Pizza()
+        {
+            Special = special,
+            SpecialId = special.Id,
+            Size = Pizza.DefaultSize
+        };
+
+        showingConfigureDialog = true;
+    } *@
+
     protected override void OnInitialized()
     {
         specials.AddRange(new List<PizzaSpecial>
